@@ -1,0 +1,50 @@
+import pytest
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+
+def test_no_duplicate_pets(testing, go_to_my_pets):
+    '''Поверяем что на странице со списком моих питомцев нет повторяющихся питомцев'''
+    driver = testing
+
+    # Устанавливаем явное ожидание
+    WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, ".table.table-hover tbody tr")))
+
+    # Сохраняем в переменную pet_data элементы с данными о питомцах
+    pet_data = driver.find_elements(By.CSS_SELECTOR, '.table.table-hover tbody tr')
+
+    # Перебираем данные из pet_data, оставляем имя, возраст, и породу остальное меняем на пустую строку
+    # и разделяем по пробелу.
+    list_data = []
+    for i in range(len(pet_data)):
+        data_pet = pet_data[i].text.replace('\n', '').replace('×', '')
+        split_data_pet = data_pet.split(' ')
+        list_data.append(split_data_pet)
+        print(list_data)
+
+
+    # Склеиваем имя, возраст и породу, получившиеся склееные слова добавляем в строку
+    # и между ними вставляем пробел
+    line = ''
+    for i in list_data:
+        line += ''.join(i)
+        line += ' '
+
+    # Получаем список из строки line
+    list_line = line.split(' ')
+
+    # Превращаем список в множество
+    set_list_line = set(list_line)
+
+    # Находим количество элементов списка и множества
+    a = len(list_line)
+    b = len(set_list_line)
+
+    # Из количества элементов списка вычитаем количество элементов множества
+    result = a - b
+
+    # Если количество элементов == 0 значит карточки с одинаковыми данными отсутствуют
+    assert result == 0
+
+# python -m pytest -v --driver Chrome --driver-path /Users/zaytsev/PycharmProjects/Unit_25.5.1/chromedriver tests/test_no_duplicat_pets.py
